@@ -1,10 +1,13 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import * as ReactMarkdown from 'react-markdown';
+import { Link } from 'react-router-dom';
+const { useState } = React;
 
 import { useStateWithStorage } from '../hooks/use_state_with_storage';
 import { putMemo } from '../indexeddb/memos';
 import { Button } from '../components/button';
+import { SaveModal } from '../components/save_modal';
 
 
 const Header = styled.header`
@@ -63,17 +66,19 @@ const StorageKey = 'pages/editor:text';
 export const Editor: React.FC = () => {
   const [text, setText] = useStateWithStorage('', StorageKey);
 
-  const saveMemo = (): void => {
-    putMemo('TITLE', text);
-  };
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <>
       <Header>
         Markdown Editor
         <HeaderControl>
-          <Button onClick={saveMemo}>
+          <Button onClick={() => setShowModal(true)}>
             保存する
           </Button>
+          <Link to="/history">
+            履歴を見る
+          </Link>
         </HeaderControl>
       </Header>
       <Wrapper>
@@ -87,6 +92,15 @@ export const Editor: React.FC = () => {
           </ReactMarkdown>
         </Preview>
       </Wrapper>
+      {showModal && (
+        <SaveModal
+          onSave={(title: string): void => {
+            putMemo(title, text);
+            setShowModal(false);
+          }}
+          onCancel={() => { setShowModal(false) }}
+        />
+      )}
     </>
   );
 }
